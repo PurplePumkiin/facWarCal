@@ -7,7 +7,7 @@ dotenv.config({ path: '.env.local' });
 async function callAPI() {
   try {
     const apiKey = process.env.API_KEY;
-    const apiUrl = `${process.env.API_URL}?selections=caches&key=${apiKey}`;
+    const apiUrl = `${process.env.API_URL}/faction/49684?selections=caches&key=${apiKey}`;
     console.log('API URL:', apiUrl);
 
     const response = await fetch(apiUrl);
