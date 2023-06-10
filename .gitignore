@@ -1,2 +1,4 @@
 API/LOCAL/.env.local
 API/POST/.env
+API/POST/node_modules
+API/LOCAL/node_modules
