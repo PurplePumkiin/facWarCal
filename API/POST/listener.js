@@ -2,6 +2,7 @@ import express from 'express';
 import crypto from 'crypto';
 import dotenv from 'dotenv';
 import mysql from 'mysql2/promise';
+import axios from 'axios';
 
 dotenv.config();
 
@@ -34,14 +35,40 @@ app.post('/api', async (req, res) => {
   try {
     const { factionId, apiKey } = req.body;
 
-    // Encrypt the API key
-    const encryptedApiKey = encryptApiKey(apiKey);
+    // Retrieve faction data from Torn API
+    const factionUrl = `https://api.torn.com/faction/${factionId}?selections=basic&key=${apiKey}`;
+    const factionResponse = await axios.get(factionUrl);
+    const factionData = factionResponse.data;
 
-    // Insert the faction ID and encrypted API key into the database
-    const query = 'INSERT INTO api_keys (factionId, apiKey, iv) VALUES (?, ?, ?)';
-    const values = [factionId, encryptedApiKey, iv.toString('hex')];
+    if (!factionData.leader) {
+      res.status(400).send('The faction leader is not found');
+      return;
+    }
+
+    // Retrieve player data from Torn API
+    const playerUrl = `https://api.torn.com/user/?selections=basic&key=${apiKey}`;
+    const playerResponse = await axios.get(playerUrl);
+    const playerData = playerResponse.data;
+
+    const leaderId = factionData.leader;
+    const playerId = playerData.player_id;
+
+    console.log('Faction Leader ID:', leaderId);
+    console.log('Player Leader ID:', playerId);
+
+    // Insert the faction ID, API key, faction leader ID, IP, and Unix time into the database
+    const ip = req.ip;
+    const unixTime = Math.floor(Date.now() / 1000);
+
+    const query =
+      'INSERT INTO FACTIONS (factionId, apiKey, leader, ip, unix) VALUES (?, ?, ?, ?, ?)';
+    const values = [factionId, encryptApiKey(apiKey), leaderId, ip, unixTime];
+
+    console.log('SQL Query:', query); // Log the SQL query
+
     await pool.query(query, values);
 
+    console.log('API write to database successful');
     res.sendStatus(200);
   } catch (error) {
     console.error('Error:', error);
