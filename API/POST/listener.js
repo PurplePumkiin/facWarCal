@@ -1,48 +1,54 @@
 import express from 'express';
-import mysql from 'mysql2/promise';
-import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 import dotenv from 'dotenv';
+import mysql from 'mysql2/promise';
 
 dotenv.config();
 
 const app = express();
-app.use(express.json());
-
 const port = 7274;
 
-// MySQL database configuration
-const dbConfig = {
+// Create a MySQL connection pool
+const pool = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
+});
+
+// Encryption key and initialization vector
+const encryptionKey = process.env.ENCRYPTION_KEY;
+const iv = crypto.randomBytes(16); // Generate a random IV for each encryption
+
+// Encrypt the API key
+const encryptApiKey = (apiKey) => {
+  const cipher = crypto.createCipheriv('aes-256-cbc', encryptionKey, iv);
+  let encrypted = cipher.update(apiKey, 'utf8', 'hex');
+  encrypted += cipher.final('hex');
+  return encrypted;
 };
 
-// Endpoint for receiving POST requests
+app.use(express.json());
+
 app.post('/api', async (req, res) => {
   try {
     const { factionId, apiKey } = req.body;
 
-    // Hash the API key
-    const hashedApiKey = await bcrypt.hash(apiKey, 10);
+    // Encrypt the API key
+    const encryptedApiKey = encryptApiKey(apiKey);
 
-    // Connect to the MySQL database
-    const connection = await mysql.createConnection(dbConfig);
+    // Insert the faction ID and encrypted API key into the database
+    const query = 'INSERT INTO api_keys (factionId, apiKey, iv) VALUES (?, ?, ?)';
+    const values = [factionId, encryptedApiKey, iv.toString('hex')];
+    await pool.query(query, values);
 
-    // Insert the data into the database
-    await connection.query('INSERT INTO your_table (factionid, apikey) VALUES (?, ?)', [factionId, hashedApiKey]);
-
-    // Close the database connection
-    await connection.end();
-
-    res.status(200).json({ message: 'Data inserted successfully' });
+    res.sendStatus(200);
   } catch (error) {
     console.error('Error:', error);
-    res.status(500).json({ error: 'An error occurred' });
+    res.sendStatus(500);
   }
 });
 
-// Start the server
 app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
+  console.log(`API listening on port ${port}`);
 });
