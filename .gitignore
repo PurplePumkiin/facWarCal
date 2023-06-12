@@ -1,0 +1,4 @@
+REGISTERAPI/.env.local
+REGISTERAPI/.env
+REGISTERAPI/node_modules/
+PROCESSOR/node_modules/
