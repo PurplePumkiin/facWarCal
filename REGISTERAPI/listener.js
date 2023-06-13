@@ -68,7 +68,7 @@ app.post('/api', async (req, res) => {
     console.log('Unix Time:', unixTime);
 
     // Insert the faction ID, API key, faction leader ID, client IP, and Unix time into the FACTIONS table
-    const insertQuery = 'INSERT INTO FACTIONS (factionId, apiKey, leader, ip, unix) VALUES (?, ?, ?, ?, ?)';
+    const insertQuery = 'INSERT INTO FACTIONS (facID, apiKey, leader, ip, unix) VALUES (?, ?, ?, ?, ?)';
     const insertValues = [factionId, encryptApiKey(apiKey), leaderId, clientIp, unixTime];
 
     console.log('SQL Insert Query:', insertQuery); // Log the SQL insert query
@@ -80,11 +80,19 @@ app.post('/api', async (req, res) => {
 
     // Insert data into the WarInfo table
     const warInfoQuery = 'INSERT INTO WarInfo (facID, wars, facMembers, inWar, lastUpdate) VALUES (?, ?, ?, ?, ?)';
-    const warInfoValues = [factionId, '{}', JSON.stringify(factionMembers), 0, `0000000000`];
+    const warInfoValues = [factionId, '{}', JSON.stringify(factionMembers), 0, 0];
 
     console.log('SQL WarInfo Query:', warInfoQuery); // Log the SQL WarInfo query
 
     await pool.query(warInfoQuery, warInfoValues);
+
+    // Insert data into the rewardData table
+    const rewardDataQuery = 'INSERT INTO rewardData (facID, curWar, estHit, actHit, lastUpdate) VALUES (?, ?, ?, ?, ?)';
+    const rewardDataValues = [factionId, '{}', 975000, 975000, 0];
+
+    console.log('SQL rewardData Query:', rewardDataQuery); // Log the SQL rewardData query
+
+    await pool.query(rewardDataQuery, rewardDataValues);
 
     console.log('Data inserted successfully');
 

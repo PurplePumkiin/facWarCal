@@ -3,3 +3,4 @@ PROCESSOR/.env
 REGISTERAPI/node_modules/
 PROCESSOR/node_modules/
 REGISTERAPI/.env
+PROCESSOR/.env
