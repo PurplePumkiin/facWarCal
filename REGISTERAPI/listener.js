@@ -29,6 +29,14 @@ const encryptApiKey = (apiKey) => {
   return encrypted;
 };
 
+// Fetch faction members from Torn API
+const fetchFactionMembers = async (factionId, apiKey) => {
+  const url = `https://api.torn.com/faction/${factionId}?selections=basic&key=${apiKey}`;
+  const response = await axios.get(url);
+  const { members } = response.data;
+  return members;
+};
+
 app.use(express.json());
 
 app.post('/api', async (req, res) => {
@@ -53,22 +61,33 @@ app.post('/api', async (req, res) => {
     const leaderId = factionData.leader;
     const playerId = playerData.player_id;
 
-    console.log('Faction Leader ID:', leaderId);
-    console.log('Player Leader ID:', playerId);
+    const clientIp = req.ip; // Get client's IP address
+    const unixTime = Math.floor(Date.now() / 1000); // Get current Unix timestamp
 
-    // Insert the faction ID, API key, faction leader ID, IP, and Unix time into the database
-    const ip = req.ip;
-    const unixTime = Math.floor(Date.now() / 1000);
+    console.log('Client IP:', clientIp);
+    console.log('Unix Time:', unixTime);
 
-    const query =
-      'INSERT INTO FACTIONS (factionId, apiKey, leader, ip, unix) VALUES (?, ?, ?, ?, ?)';
-    const values = [factionId, encryptApiKey(apiKey), leaderId, ip, unixTime];
+    // Insert the faction ID, API key, faction leader ID, client IP, and Unix time into the FACTIONS table
+    const insertQuery = 'INSERT INTO FACTIONS (factionId, apiKey, leader, ip, unix) VALUES (?, ?, ?, ?, ?)';
+    const insertValues = [factionId, encryptApiKey(apiKey), leaderId, clientIp, unixTime];
 
-    console.log('SQL Query:', query); // Log the SQL query
+    console.log('SQL Insert Query:', insertQuery); // Log the SQL insert query
 
-    await pool.query(query, values);
+    await pool.query(insertQuery, insertValues);
 
-    console.log('API write to database successful');
+    // Fetch faction members from Torn API
+    const factionMembers = await fetchFactionMembers(factionId, apiKey);
+
+    // Insert data into the WarInfo table
+    const warInfoQuery = 'INSERT INTO WarInfo (facID, wars, facMembers, inWar, lastUpdate) VALUES (?, ?, ?, ?, ?)';
+    const warInfoValues = [factionId, '{}', JSON.stringify(factionMembers), 0, `0000000000`];
+
+    console.log('SQL WarInfo Query:', warInfoQuery); // Log the SQL WarInfo query
+
+    await pool.query(warInfoQuery, warInfoValues);
+
+    console.log('Data inserted successfully');
+
     res.sendStatus(200);
   } catch (error) {
     console.error('Error:', error);
