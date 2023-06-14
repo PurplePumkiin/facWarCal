@@ -62,7 +62,6 @@ app.post('/api', async (req, res) => {
     const playerId = playerData.player_id;
 
     const clientIp = req.ip; // Get client's IP address
-    const unixTime = Math.floor(Date.now() / 1000); // Get current Unix timestamp
 
     console.log('Client IP:', clientIp);
     console.log('Unix Time:', unixTime);
