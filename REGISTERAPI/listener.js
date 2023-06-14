@@ -19,14 +19,30 @@ const pool = mysql.createPool({
 
 // Encryption key and initialization vector
 const encryptionKey = process.env.ENCRYPTION_KEY;
-const iv = crypto.randomBytes(16); // Generate a random IV for each encryption
 
+// Generate dynamic salt phrase
+const saltPhrase = process.env.SALT;
+const unixTime = Math.floor(Date.now() / 1000); // Get current Unix timestamp
+const saltHex = Buffer.from(saltPhrase, 'utf8').toString('hex');
+const unixTimeHex = unixTime.toString(16);
+//const ivRandom = crypto.createCipheriv()
+const iv = Buffer.from((unixTimeHex + saltHex).substring(4, 20), 'utf-8');
+
+console.log('debug - iv:', iv)
 // Encrypt the API key
 const encryptApiKey = (apiKey) => {
   const cipher = crypto.createCipheriv('aes-256-cbc', encryptionKey, iv);
   let encrypted = cipher.update(apiKey, 'utf8', 'hex');
   encrypted += cipher.final('hex');
   return encrypted;
+};
+
+// Decrypt the API key
+const decryptApiKey = (encryptedApiKey) => {
+  const decipher = crypto.createDecipheriv('aes-256-cbc', encryptionKey, iv);
+  let decrypted = decipher.update(encryptedApiKey, 'hex', 'utf8');
+  decrypted += decipher.final('utf8');
+  return decrypted;
 };
 
 // Fetch faction members from Torn API
@@ -41,6 +57,25 @@ app.use(express.json());
 
 app.post('/api', async (req, res) => {
   try {
+    // Encryption key and initialization vector
+    const encryptionKey = process.env.ENCRYPTION_KEY;
+
+    // Generate dynamic salt phrase
+    const saltPhrase = process.env.SALT;
+    const unixTime = Math.floor(Date.now() / 1000); // Get current Unix timestamp
+    const saltHex = Buffer.from(saltPhrase, 'utf8').toString('hex');
+    const unixTimeHex = unixTime.toString(16);
+    //const ivRandom = crypto.createCipheriv()
+    const iv = Buffer.from((unixTimeHex + saltHex).substring(4, 20), 'utf-8');
+
+    console.log('debug - iv:', iv)
+    // Encrypt the API key
+    const encryptApiKey = (apiKey) => {
+      const cipher = crypto.createCipheriv('aes-256-cbc', encryptionKey, iv);
+      let encrypted = cipher.update(apiKey, 'utf8', 'hex');
+      encrypted += cipher.final('hex');
+      return encrypted;
+    };
     const { factionId, apiKey } = req.body;
 
     // Retrieve faction data from Torn API
