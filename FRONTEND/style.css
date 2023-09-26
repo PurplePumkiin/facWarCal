@@ -1,9 +1,17 @@
 #wrapper{
     background-color: #f1f3f9;
+    width: 100vw;
+    height: 100vh;
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    z-index: 1;
 }
 
 #header{
-
+    width: 100vw;
+    height: 35px;
+    background-color: #343A47;
 }
 
 #content{
