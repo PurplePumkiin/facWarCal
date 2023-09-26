@@ -1,0 +1,26 @@
+#wrapper{
+    background-color: #f1f3f9;
+}
+
+#header{
+
+}
+
+#content{
+
+}
+
+@media (prefers-color-scheme: dark) {
+    #wrapper {
+      color: #eee;
+      background: #2E2E2E;
+    }
+  
+    #wrapper a {
+      color: #809fff;
+    }
+  
+    #body{
+      color: #eee;
+    }
+  }
