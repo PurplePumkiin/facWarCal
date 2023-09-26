@@ -18,6 +18,26 @@
 
 }
 
+#loginBox{
+    height: 37.5vh;
+    width: 13vw;
+    min-width: 270px;
+    align-content: center;
+    position: absolute;
+    left: 43.5vw;
+    right: 43.5vw;
+    background-color: white;
+    border-radius: 10px;
+    top: 31.25vh
+  }
+  
+  #loginBox form{
+    width: 75%;
+    position: absolute;
+    top: 10vh;
+    left: 12.5%;
+    
+  }
 @media (prefers-color-scheme: dark) {
     #wrapper {
       color: #eee;

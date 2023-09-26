@@ -14,8 +14,8 @@
                 <form>
                     <input type="text" placeholder="username">
                     <input type="password" placeholder="password">
-                    <a>Login</a>
                 </form>
+                <a>Login</a>
             </container>
         </div>
     </div>
