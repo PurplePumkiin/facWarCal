@@ -57,15 +57,14 @@ app.use(express.json());
 
 app.post('/api', async (req, res) => {
   try {
-    // Encryption key and initialization vector
-    const encryptionKey = process.env.ENCRYPTION_KEY;
+    
 
-    // Generate dynamic salt phrase
+    // Generate dynamic IV
+    const encryptionKey = process.env.ENCRYPTION_KEY;
     const saltPhrase = process.env.SALT;
-    const unixTime = Math.floor(Date.now() / 1000); // Get current Unix timestamp
+    const unixTime = Math.floor(Date.now() / 1000);
     const saltHex = Buffer.from(saltPhrase, 'utf8').toString('hex');
     const unixTimeHex = unixTime.toString(16);
-    //const ivRandom = crypto.createCipheriv()
     const iv = Buffer.from((unixTimeHex + saltHex).substring(4, 20), 'utf-8');
 
     console.log('debug - iv:', iv)
